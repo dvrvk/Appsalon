@@ -1,0 +1,5 @@
+#Ignora la carpeta Modules
+node_modules
+
+#Ignorar carpeta vendor
+vendor
