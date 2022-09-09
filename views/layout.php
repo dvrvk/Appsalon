@@ -11,6 +11,9 @@
     <div class="contenedor-app">
         <div class="imagen"></div>
         <div class="app"><?php echo $contenido; ?></div>
-    </div>     
+    </div>
+    <?php 
+        echo $script ?? ''; //IMPORTANTE para que no me marque error en el resto de páginas que no este definido
+    ?>
 </body>
 </html>

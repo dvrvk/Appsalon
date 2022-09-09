@@ -103,8 +103,26 @@ class LoginController {
                 $error = true;
             }
 
-            if($_SERVER['REQUEST_METHOD'] === ' POST') {
+            if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 //Leer el nuevo password y guardarlo
+                $password = new Usuario($_POST);
+                $alertas = $password->validarPassword();
+
+                if(empty($alertas)) {
+                    $usuario->password = null;
+                    $usuario->password = $password->password;
+                    $usuario->hashPassword();
+                    $usuario->token = "";
+                    $resultado = $usuario->guardar();
+                    if($resultado) {
+                        //Crear mensaje exito
+                        $error= true;
+                        Usuario::setAlerta('exito', 'Contraseña actualizada correctamente');
+
+                        //Redireccionar tras 3 segundos
+                        header('Refresh: 3; url=/');
+                    }
+                }
             }
 
         } else {
