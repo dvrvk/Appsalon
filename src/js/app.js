@@ -19,9 +19,14 @@ function iniciarApp() {
     botonesPaginador(); //Agrega o quita los botones del paginador
     paginaSiguiente();
     paginaAnterior();
+
     consultarAPI(); //Consulta la API en el backend de php
+
     nombreCliente(); //Agrega el nombre del cliente al objeto cita
     seleccionarFecha(); //Agrega la fecha de la cita en el objeto cita
+    seleccionarHora(); //Añade la hora de la cita en el objeto
+
+    mostrarResumen(); //Muestra el resumen de la cita
 }
 
 function mostrarSeccion() {
@@ -54,6 +59,7 @@ function tabs() {
 
             mostrarSeccion();
             botonesPaginador();
+
         });
     });
 }
@@ -68,6 +74,9 @@ function botonesPaginador() {
     } else if (paso === 3) {
         paginaAnterior.classList.remove('ocultar');
         paginaSiguiente.classList.add('ocultar');
+
+        mostrarResumen();
+
     } else if (paso === 2) {
         paginaAnterior.classList.remove('ocultar');
         paginaSiguiente.classList.remove('ocultar');
@@ -158,8 +167,6 @@ function seleccionarServicio(servicio) {
         divServidio.classList.add('seleccionado');
     }
 
-    console.log(cita);
-
 }
 
 function nombreCliente() {
@@ -172,7 +179,7 @@ function seleccionarFecha() {
         const dia = new Date(e.target.value).getUTCDay();
         if([6,0].includes(dia)) {
             e.target.value = '';
-            mostrarAlerta('Los fines de semana estamos cerrados', 'error');
+            mostrarAlerta('Los fines de semana estamos cerrados', 'error', '.formulario');
 
         } else {
             cita.fecha = e.target.value;
@@ -181,25 +188,129 @@ function seleccionarFecha() {
 
 }
 
-function mostrarAlerta(mensaje, tipo){
+function seleccionarHora() {
+    const inputHora = document.querySelector('#hora');
+    inputHora.addEventListener('input', function(e) {
+        const horaCita = e.target.value;
+        const hora = horaCita.split(':')[0]; //Separar una cadena de texto (forma un array)(cojo el puesto 0 de array)
+        const min = horaCita.split(':')[1];
+        if(hora < 10 || hora > 18) {
+            e.target.value = '';
+            mostrarAlerta('Fuera de horario', 'error', '.formulario');
+        } else {
+            cita.hora = e.target.value;
+        }
+    });
+}
+
+function mostrarAlerta(mensaje, tipo, elemento, desaparece = true){
 
     //Comprobar si hay alertas previas
     const alertaPrevia = document.querySelector('.alerta');
-    if(!alertaPrevia) {
-        //Crear la alerta
-        const alerta = document.createElement('DIV');
-        alerta.textContent = mensaje;
-        alerta.classList.add('alerta');
-        alerta.classList.add(tipo);
 
-        //Agregar alerta al DOM
-        const formulario = document.querySelector('.formulario');
-        formulario.appendChild(alerta);
+    if(alertaPrevia) {
+        alertaPrevia.remove();
+    }
 
-        //Borrar alerta tras x segundoss
+    //Crear la alerta
+    const alerta = document.createElement('DIV');
+    alerta.textContent = mensaje;
+    alerta.classList.add('alerta');
+    alerta.classList.add(tipo);
+
+    //Agregar alerta al DOM
+    const referencia = document.querySelector(elemento);
+    referencia.appendChild(alerta);
+
+    //Borrar alerta tras x segundoss
+    if(desaparece) {
         setTimeout(() => {
             alerta.remove();
         }, 3000);
     }
+        
+}
+
+function mostrarResumen() {
+    const resumen = document.querySelector('.contenido-resumen');
+    
+    // Limpiar el contenido de resumen
+    while(resumen.firstChild){
+        resumen.removeChild(resumen.firstChild);
+    };
+
+    if(Object.values(cita).includes('') || cita.servicios.length === 0) { //Object.values permite iterar por todos los valores del objeto
+        mostrarAlerta('Faltan datos de servicios, fecha u hora', 'error', '.contenido-resumen', false);
+        
+        return;
+    } 
+
+    // Formatear div de resumen
+    const {nombre, fecha, hora, servicios} = cita;
+    
+    //Heading para Servicios en Resumen
+    const headingServicios = document.createElement('H3');
+    headingServicios.textContent = 'Resumen de Servicios';
+    resumen.appendChild(headingServicios);
+
+    //Iterando y mostrando los servicios
+    servicios.forEach(servicio => {
+        const { id, precio, nombre} = servicio;
+        const contenedorServicio = document.createElement('DIV');
+        contenedorServicio.classList.add('contenedor-servicio');
+
+        const textoServicio = document.createElement('P');
+        textoServicio.textContent = nombre;
+
+        const precioServicio = document.createElement('P');
+        precioServicio.innerHTML = `<span>Precio: </span>${precio}€`;
+
+        contenedorServicio.appendChild(textoServicio);
+        contenedorServicio.appendChild(precioServicio);
+
+        resumen.appendChild(contenedorServicio);
+    });
+
+    //Heading de información cliente
+    const headingCita = document.createElement('H3');
+    headingCita.textContent = 'Información Cita';
+    resumen.appendChild(headingCita);
+
+    // Muestro información del cliente y cita
+    const nombreCliente = document.createElement('P');
+    nombreCliente.innerHTML = `<span>Nombre: </span>${nombre}`;
+
+    //FORMATEAR LA FECHA en Español
+    const fechaObj = new Date(fecha);
+    const mes = fechaObj.getMonth();
+    const dia = fechaObj.getDate();
+    const year = fechaObj.getFullYear();
+
+    const fechaUTC = new Date(Date.UTC(year, mes, dia));
+    const opciones = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
+    const fechaFormateada = fechaUTC.toLocaleDateString('es-ES', opciones);
+    //Fin
+
+    const fechaCliente = document.createElement('P');
+    fechaCliente.innerHTML = `<span>Fecha: </span>${fechaFormateada}`;
+
+    const horaCliente = document.createElement('P');
+    horaCliente.innerHTML = `<span>Hora: </span>${hora}`;
+    
+    //Boton para crear una cita
+    const botonReservar = document.createElement('BUTTON');
+    botonReservar.classList.add('boton');
+    botonReservar.textContent = ' Reservar Cita';
+    botonReservar.onclick = reservarCita;
+
+    resumen.appendChild(nombreCliente);
+    resumen.appendChild(fechaCliente);
+    resumen.appendChild(horaCliente);
+    resumen.appendChild(botonReservar);
+
+}
+
+function reservarCita() {
+    
 }
 
