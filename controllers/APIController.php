@@ -9,4 +9,12 @@ class APIController {
         echo json_encode($servicios, JSON_UNESCAPED_UNICODE);
             
     }
+
+    public static function guardar(){
+        $respuesta = [
+            'datos' => $_POST
+        ];
+
+        echo json_encode($respuesta, JSON_UNESCAPED_UNICODE);
+    }
 }
