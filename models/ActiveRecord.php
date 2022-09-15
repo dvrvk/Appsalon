@@ -1,5 +1,9 @@
 <?php
 namespace Model;
+
+use mysqli;
+use mysqli_sql_exception;
+
 class ActiveRecord {
 
     // Base DE DATOS
@@ -9,7 +13,7 @@ class ActiveRecord {
 
     // Alertas y Mensajes
     protected static $alertas = [];
-    
+
     // Definir la conexión a la BD - includes/database.php
     public static function setDB($database) {
         self::$db = $database;
@@ -81,7 +85,7 @@ class ActiveRecord {
     }
 
     // Sincroniza BD con Objetos en memoria
-    public function sincronizar($args=[]) { 
+    public function sincronizar($args=[]) {
         foreach($args as $key => $value) {
           if(property_exists($this, $key) && !is_null($value)) {
             $this->$key = $value;
@@ -138,16 +142,27 @@ class ActiveRecord {
         // Insertar en la base de datos
         $query = " INSERT INTO " . static::$tabla . " ( ";
         $query .= join(', ', array_keys($atributos));
-        $query .= " ) VALUES ('"; 
+        $query .= " ) VALUES ('";
         $query .= join("', '", array_values($atributos));
         $query .= "') ";
 
+        //return json_encode(['query' => $query]);
+
         // Resultado de la consulta
-        $resultado = self::$db->query($query);
-        return [
-           'resultado' =>  $resultado,
-           'id' => self::$db->insert_id
-        ];
+        try {
+            $resultado = self::$db->query($query);
+
+            return [
+                'resultado' =>  $resultado,
+                'id' => self::$db->insert_id
+            ];
+
+        } catch(mysqli_sql_exception){
+               return [
+                   'resultado' =>  false,
+                   'id' => 0
+           ];
+        }
     }
 
     // Actualizar el registro
@@ -165,7 +180,7 @@ class ActiveRecord {
         $query = "UPDATE " . static::$tabla ." SET ";
         $query .=  join(', ', $valores );
         $query .= " WHERE id = '" . self::$db->escape_string($this->id) . "' ";
-        $query .= " LIMIT 1 "; 
+        $query .= " LIMIT 1 ";
 
         // Actualizar BD
         $resultado = self::$db->query($query);
