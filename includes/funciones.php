@@ -19,3 +19,19 @@ function isSession() {
         session_start();
     }
 }
+
+//Función que revisa que el usuario esté autenticado
+function isAuth() : void {
+    if(!isset($_SESSION['login'])) {
+        header('Location: /');
+    }
+}
+
+// Saber si es el utlimo servicio
+function esUltimo(string $actual, string $proximo) :bool {
+    if ($actual !== $proximo) {
+        return true;
+    }
+
+    return false;
+}
