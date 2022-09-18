@@ -27,6 +27,13 @@ function isAuth() : void {
     }
 }
 
+//Compobar que es admin
+function isAdmin(): void {
+    if(!isset($_SESSION['admin'])) {
+        header('Location: /');
+    }
+}
+
 // Saber si es el utlimo servicio
 function esUltimo(string $actual, string $proximo) :bool {
     if ($actual !== $proximo) {
@@ -35,3 +42,4 @@ function esUltimo(string $actual, string $proximo) :bool {
 
     return false;
 }
+

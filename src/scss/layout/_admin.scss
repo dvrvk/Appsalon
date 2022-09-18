@@ -26,3 +26,20 @@
         font-size: 2.5rem;
     }
 }
+
+.servicios {
+    @extend .citas;
+
+    .acciones {
+        margin: 0;
+        }
+
+    .boton,
+    .boton-eliminar {
+        margin: 0;
+
+        &:hover {
+            color: v.$blanco;
+        }
+    }
+}

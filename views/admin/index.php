@@ -59,6 +59,11 @@ use function PHPSTORM_META\type;
             if(esUltimo($actual, $proximo)):
         ?>
             <p class="total">TOTAL: <span><?php echo $total . "€"; ?></span></p>
+
+            <form action="api/eliminar" method="POST">
+                <input type="hidden" name="id" value="<?php echo $cita->id; ?>"/>
+                <input type="submit" class="boton-eliminar" value="Eliminar"/>
+            </form>
         <?php
             endif;
             
