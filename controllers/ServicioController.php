@@ -8,6 +8,8 @@ use MVC\Router;
 class ServicioController {
     public static function index(Router $router){
         isSession();
+        isAdmin();
+
         $servicios = Servicios::all();
 
         $router->render('/servicios/index', [
@@ -18,6 +20,7 @@ class ServicioController {
 
     public static function crear(Router $router){
         isSession();
+        isAdmin();
 
         $servicio = new Servicios();
         $alertas = [];
@@ -43,19 +46,41 @@ class ServicioController {
 
     public static function actualizar(Router $router){
         isSession();
+        isAdmin();
+        
+        if(!is_numeric($_GET['id'])) {
+            header('Location: /servicios');
+        }
+
+        $servicio = Servicios::find($_GET['id']);
+        $alertas = [];
 
         if($_SERVER['REQUEST_METHOD'] === "POST") {
-            
+            $servicio->sincronizar($_POST);
+            $alertas = $servicio->validar();
+
+            if(empty($alertas)) {
+                $servicio->guardar();
+                header('Location: /servicios');
+            }
         }
 
         $router->render('/servicios/actualizar', [
-            'nombre' => $_SESSION['nombre']
+            'nombre' => $_SESSION['nombre'],
+            'alertas' => $alertas,
+            'servicio' => $servicio
+
         ]);
     }
 
     public static function eliminar(Router $router){
+        isSession();
+        isAdmin();
         if($_SERVER['REQUEST_METHOD'] === "POST") {
-            
+            $id = $_POST['id'];
+            $servicio = Servicios::find($id);
+            $servicio->eliminar();
+            header('Location: /servicios');
         }
     }
 }
