@@ -3,3 +3,6 @@ node_modules
 
 #Ignorar carpeta vendor
 vendor
+
+#Ignorar variables de entorno
+.env
